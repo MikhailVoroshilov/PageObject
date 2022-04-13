@@ -7,18 +7,17 @@ import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.*;
 
 public class VerificationPage {
-    private SelenideElement confirmation = $("[data-test-id] .input__top");
-    private SelenideElement codeField = $("[data-test-id=code] input");
-    private SelenideElement verifyButton = $("[data-test-id=action-verify]");
+    private SelenideElement code = $x("//*[@data-test-id=\"code\"]//input");
+    private SelenideElement button = $x("//*[@data-test-id=\"action-verify\"]//*[@class=\"button__text\"]");
+    private SelenideElement dashBord = $x("//*[@data-test-id=\"dashboard\"]//span");
 
     public VerificationPage() {
-        confirmation.shouldBe(visible).should(text("Код из SMS или Push"));
+        code.should(visible);
     }
 
-    public DashboardPage validVerify(DataHelper.VerificationCode verificationCode) {
-        codeField.setValue(verificationCode.getCode());
-        verifyButton.click();
+    public DashboardPage validCode(DataHelper.VerificationCode verificationCode) {
+        code.setValue(verificationCode.getCode());
+        button.click();
         return new DashboardPage();
     }
 }
-

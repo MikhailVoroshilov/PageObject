@@ -1,95 +1,59 @@
 package ru.netology;
 
-import com.codeborne.selenide.Configuration;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.netology.data.DataHelper;
-import ru.netology.page.CardsPage;
 import ru.netology.page.DashboardPage;
 import ru.netology.page.LoginPage;
-import ru.netology.page.TransferPage;
+import ru.netology.page.VerificationPage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import static com.codeborne.selenide.Selenide.open;
-
 class MoneyTransferTest {
 
-    @BeforeEach
-    void setUp(){
-//        Configuration.browserSize = "800x750";
-//        Configuration.holdBrowserOpen = true;
-        open("http://localhost:9999");
+    @Test
+    void shouldValidLoginUpdateCardFirst() {
+        LoginPage login = new LoginPage();
+        login.validLoginPage();
+        VerificationPage verificationPage = new VerificationPage();
+        verificationPage.validCode(DataHelper.getVerificationCodeFor());
+        var card1 = DataHelper.getCardNumber1().getNumber();
+        var card2 = DataHelper.getCardNumber2().getNumber();
 
+        DashboardPage dashboardPage = new DashboardPage();
+        int balanceCard0001 = dashboardPage.getCardBalance(0);
+        int balanceCard0002 = dashboardPage.getCardBalance(1);
+        int randomSum = DataHelper.getRandomSum(balanceCard0001);
+        dashboardPage.transfer(1, randomSum, card1);
+        assertEquals(balanceCard0001 - randomSum, dashboardPage.getCardBalance(0));
+        assertEquals(balanceCard0002 + randomSum, dashboardPage.getCardBalance(1));
+
+        dashboardPage.transfer(0, randomSum, card2);
+        assertEquals(balanceCard0001, dashboardPage.getCardBalance(0));
+        assertEquals(balanceCard0002, dashboardPage.getCardBalance(1));
+        System.out.println();
     }
 
     @Test
-    void shouldTransferMoneyfromFirstToSecond() {
-        var loginPage = new LoginPage();
-        var authInfo = DataHelper.getAuthInfo();
-        var verificationPage = loginPage.validLogin(authInfo);
-        var verificationCode = DataHelper.getVerificationCodeFor(authInfo);
-        verificationPage.validVerify(verificationCode);
+    void shouldValidLoginUpdateCardSecond() {
+        LoginPage login = new LoginPage();
+        login.validLoginPage();
+        VerificationPage verificationPage = new VerificationPage();
+        verificationPage.validCode(DataHelper.getVerificationCodeFor());
+        var card1 = DataHelper.getCardNumber1().getNumber();
+        var card2 = DataHelper.getCardNumber2().getNumber();
 
-        var cardsPage = new CardsPage();
-        var cardInfoFirst = DataHelper.getFirstCard();
-        var initialBalanceFirst = new DashboardPage().getCardBalance(cardInfoFirst);
-        var cardInfoSecond = DataHelper.getSecondCard();
-        var initialBalanceSecond = new DashboardPage().getCardBalance(cardInfoSecond);
-        int  randomSum = DataHelper.getSumForTopUpSecondCard();
-        cardsPage.topUpSecondCard();
+        DashboardPage dashboardPage = new DashboardPage();
+        int balanceCard0001 = dashboardPage.getCardBalance(0);
+        int balanceCard0002 = dashboardPage.getCardBalance(1);
+        int randomSum = DataHelper.getRandomSum(balanceCard0001);
+        dashboardPage.transfer(0, randomSum, card2);
+        assertEquals(balanceCard0001 + randomSum, dashboardPage.getCardBalance(0));
+        assertEquals(balanceCard0002 - randomSum, dashboardPage.getCardBalance(1));
 
-        var transferPage =new TransferPage();
-        transferPage.topUp(randomSum);
-
-        var balanceFirst = new DashboardPage().getCardBalance(cardInfoFirst);
-        var balanceSecond = new DashboardPage().getCardBalance(cardInfoSecond);
-        int expectedFirst = initialBalanceFirst - randomSum;
-        int expectedSecond= initialBalanceSecond + randomSum;
-        assertEquals(expectedFirst, balanceFirst);
-        assertEquals(expectedSecond, balanceSecond);
-
-        //проверка что баланс востановился
-        cardsPage.topUpFirstCard();
-        transferPage.topFinish(randomSum);
-        var expectedBalans = new DashboardPage().getCardBalance(cardInfoFirst);
-        var actualBalans = new DashboardPage().getCardBalance(cardInfoSecond);
-        assertEquals(expectedBalans, actualBalans);
-    }
-
-    @Test
-    void shouldNotTransferIfBalanseNotEnough() {
-        var loginPage = new LoginPage();
-        var authInfo = DataHelper.getAuthInfo();
-        var verificationPage = loginPage.validLogin(authInfo);
-        var verificationCode = DataHelper.getVerificationCodeFor(authInfo);
-        verificationPage.validVerify(verificationCode);
-
-        var cardsPage = new CardsPage();
-        var cardInfoFirst = DataHelper.getFirstCard();
-        var initialBalanceFirst = new DashboardPage().getCardBalance(cardInfoFirst);
-        var cardInfoSecond = DataHelper.getSecondCard();
-        var initialBalanceSecond = new DashboardPage().getCardBalance(cardInfoSecond);
-        int  randomSum = DataHelper.getInvalidSumForTopUpSecondCard();
-        cardsPage.topUpSecondCard();
-
-        var transferPage =new TransferPage();
-        transferPage.topUp(randomSum);
-
-        var balanceSecond = new DashboardPage().getCardBalance(cardInfoSecond);
-        int expectedFirst = initialBalanceFirst - randomSum;
-        int expectedSecond= initialBalanceSecond + randomSum;
-        Assertions.assertFalse(expectedFirst < 0);
-        assertEquals(expectedSecond, balanceSecond);
-
-        //проверка что баланс востановился
-        cardsPage.topUpFirstCard();
-        transferPage.topFinish(randomSum);
-        var expectedBalans = new DashboardPage().getCardBalance(cardInfoFirst);
-        var actualBalans = new DashboardPage().getCardBalance(cardInfoSecond);
-        assertEquals(expectedBalans, actualBalans);
+        dashboardPage.transfer(1, randomSum, card1);
+        assertEquals(balanceCard0001, dashboardPage.getCardBalance(0));
+        assertEquals(balanceCard0002, dashboardPage.getCardBalance(1));
+        System.out.println();
 
     }
-
 }
