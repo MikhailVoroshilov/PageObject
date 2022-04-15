@@ -1,3 +1,2 @@
 # Статус
-[![Java CI with Gradle](https://github.com/MikhailVoroshilov/PageObject/actions/workflows/gradle.yml/badge.svg?branch=values)]
-
+[![Java CI with Gradle](https://github.com/MikhailVoroshilov/PageObject/actions/gradleVetki.yml/badge.svg?branch=values)]
